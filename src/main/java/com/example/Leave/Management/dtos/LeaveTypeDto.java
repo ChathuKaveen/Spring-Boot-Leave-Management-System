@@ -1,0 +1,19 @@
+package com.example.Leave.Management.dtos;
+
+import jakarta.persistence.Column;
+import jakarta.persistence.GeneratedValue;
+import jakarta.persistence.GenerationType;
+import jakarta.persistence.Id;
+import lombok.AllArgsConstructor;
+import lombok.Getter;
+
+@AllArgsConstructor
+@Getter
+public class LeaveTypeDto {
+
+    private int id;
+    private String type;
+    private String description;
+    private boolean paid;
+    private boolean halfday_allowed;
+}

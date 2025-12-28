@@ -1,0 +1,32 @@
+spring:
+  application:
+    name: Leave-Management
+
+  datasource:
+    url: jdbc:mysql://localhost:3306/leavesystem?createDatabaseIfNotExist=true
+    username: root
+    password: root
+
+  jpa:
+    show-sql: true
+    hibernate:
+      ddl-auto: none
+    properties:
+      hibernate:
+        format_sql: true
+
+  flyway:
+    enabled: true
+    baseline-on-migrate: true
+
+  config:
+    import: optional:file:.env[.properties]
+    
+  jwt:
+    secret: ${JWT_SECRET}
+
+logging:
+  level:
+    org.flywaydb: DEBUG
+    org.hibernate.SQL: DEBUG
+    org.hibernate.type.descriptor.sql.BasicBinder: TRACE
