@@ -2,7 +2,6 @@ package com.example.Leave.Management.controllers;
 
 import com.example.Leave.Management.dtos.JwtResponse;
 import com.example.Leave.Management.dtos.LoginRequest;
-import com.example.Leave.Management.repositories.UserRepository;
 import com.example.Leave.Management.services.JwtService;
 import jakarta.validation.Valid;
 import lombok.AllArgsConstructor;
@@ -11,7 +10,6 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
-import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.web.bind.annotation.*;
 
 @RestController
@@ -22,7 +20,7 @@ public class AuthController {
     private final AuthenticationManager authenticationManager;
     private final JwtService jwtService;
 
-    @PostMapping
+    @PostMapping("/login")
     public ResponseEntity<JwtResponse> login(@Valid @RequestBody LoginRequest request){
         authenticationManager.authenticate(
                 new UsernamePasswordAuthenticationToken(
