@@ -1,5 +1,6 @@
 package com.example.Leave.Management.controllers;
 
+import com.example.Leave.Management.configs.JwtConfig;
 import com.example.Leave.Management.dtos.JwtResponse;
 import com.example.Leave.Management.dtos.LoginRequest;
 import com.example.Leave.Management.dtos.UserDto;
@@ -27,7 +28,7 @@ public class AuthController {
     private final JwtService jwtService;
     private final UserRepository userRepository;
     private final UserMapper userMapper;
-
+    private final JwtConfig jwtConfig;
     @PostMapping("/login")
     public ResponseEntity<JwtResponse> login(@Valid @RequestBody LoginRequest request , HttpServletResponse response){
         authenticationManager.authenticate(
@@ -40,10 +41,10 @@ public class AuthController {
         var accessToken = jwtService.generateAccessToken(userObj);
         var refreshToken = jwtService.generateRefreshToken(userObj);
 
-        var cookie = new Cookie("refresh", refreshToken);
+        var cookie = new Cookie("refreshToken", refreshToken);
         cookie.setHttpOnly(true);
         cookie.setPath("/auth/refresh");
-        cookie.setMaxAge(604800);
+        cookie.setMaxAge(jwtConfig.getRefreshTokenExpiration());
         cookie.setSecure(true);
         response.addCookie(cookie);
 
@@ -54,6 +55,19 @@ public class AuthController {
     public boolean validate(@RequestHeader("Authorization") String authHeader){
         var token = authHeader.replace("Bearer " , "");
         return jwtService.validateToken(token);
+    }
+
+    @PostMapping("/refresh")
+    public ResponseEntity<JwtResponse> refresh(@CookieValue(value = "refreshToken") String refreshToken){
+        if(!jwtService.validateToken(refreshToken)){
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
+        }
+
+        var userId = jwtService.getUserIdFromToken(refreshToken);
+        var user = userRepository.findById(userId).orElseThrow();
+        var accessToken = jwtService.generateAccessToken(user);
+        return ResponseEntity.ok(new JwtResponse(accessToken));
+
     }
 
     @GetMapping("/me")

@@ -3,6 +3,7 @@ package com.example.Leave.Management.services;
 import com.example.Leave.Management.dtos.RegisterUserRequest;
 import com.example.Leave.Management.dtos.UpdateUserRequest;
 import com.example.Leave.Management.dtos.UserDto;
+import com.example.Leave.Management.entities.Role;
 import com.example.Leave.Management.entities.User;
 import com.example.Leave.Management.exceptions.UserAlreadyExisist;
 import com.example.Leave.Management.exceptions.UserNotFoundException;
@@ -35,6 +36,7 @@ public class UserService {
             throw new UserAlreadyExisist();
         }
         obj.setPassword(passwordEncoder.encode(request.getPassword()));
+        obj.setRole(Role.USER);
         userRepository.save(obj);
         return userMapper.toDto(obj);
     }
