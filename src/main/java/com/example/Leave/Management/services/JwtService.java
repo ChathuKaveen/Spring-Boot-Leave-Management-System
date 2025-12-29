@@ -1,26 +1,41 @@
 package com.example.Leave.Management.services;
 
+import com.example.Leave.Management.configs.JwtConfig;
+import com.example.Leave.Management.entities.User;
 import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.JwtException;
 import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.security.Keys;
-import jakarta.annotation.PostConstruct;
+import lombok.AllArgsConstructor;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
-
 import java.util.Date;
 
+@AllArgsConstructor
 @Service
 public class JwtService {
-    @Value("${spring.jwt.secret}")
-    private String secretKey;
 
-    public String generateToken(String email){
+    private final JwtConfig jwtConfig;
+
+    public String generateAccessToken(User user){
+
+        return getToken(user , jwtConfig.getAccessTokenExpiration());
+    }
+
+    public String generateRefreshToken(User user){
+
+        return getToken(user , jwtConfig.getRefreshTokenExpiration());
+    }
+
+
+    private String getToken(User user , int expiration) {
         return Jwts.builder()
-                .subject(email)
+                .subject(user.getId().toString())
+                .claim("email", user.getEmail())
+                .claim("name", user.getName())
                 .issuedAt(new Date())
-                .expiration(new Date(System.currentTimeMillis() + 1000*60*60*10))
-                .signWith(Keys.hmacShaKeyFor(secretKey.getBytes()))
+                .expiration(new Date(System.currentTimeMillis() + 1000 * expiration))
+                .signWith(Keys.hmacShaKeyFor(jwtConfig.getSecret().getBytes()))
                 .compact();
     }
 
@@ -35,15 +50,15 @@ public class JwtService {
 
     private Claims getClaims(String token) {
         return Jwts.parser()
-                .verifyWith(Keys.hmacShaKeyFor(secretKey.getBytes()))
+                .verifyWith(Keys.hmacShaKeyFor(jwtConfig.getSecret().getBytes()))
                 .build()
                 .parseSignedClaims(token)
                 .getPayload();
 
     }
 
-    public String getUserMailFromToken(String token){
-        return getClaims(token).getSubject();
+    public Long getUserIdFromToken(String token){
+        return Long.valueOf(getClaims(token).getSubject());
 
     }
 }
