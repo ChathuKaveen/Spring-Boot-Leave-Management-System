@@ -18,5 +18,6 @@ public class LeaveDayType {
     private int id;
 
     @Column(name = "type")
-    private String type;
+    @Enumerated(EnumType.STRING)
+    private DayType type;
 }

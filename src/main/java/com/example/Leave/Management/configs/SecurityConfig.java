@@ -54,6 +54,9 @@ public class SecurityConfig {
                        .requestMatchers("/auth/login").permitAll()
                         .requestMatchers("/auth/refresh").permitAll()
                         .requestMatchers(HttpMethod.GET ,  "/users/**").hasRole(Role.ADMIN.name())
+                        .requestMatchers(HttpMethod.POST ,  "/leave/**").authenticated()
+                        .requestMatchers(HttpMethod.POST ,  "/leave-type/**").hasRole(Role.ADMIN.name())
+                        .requestMatchers(HttpMethod.POST ,  "/leave-day-type/**").hasRole(Role.ADMIN.name())
                         .anyRequest().authenticated()
                 ).addFilterBefore(jwtAuthenticationFilter , UsernamePasswordAuthenticationFilter.class)
                 .exceptionHandling(c->{

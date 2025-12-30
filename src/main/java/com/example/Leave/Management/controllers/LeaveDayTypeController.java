@@ -1,6 +1,7 @@
 package com.example.Leave.Management.controllers;
 
 import com.example.Leave.Management.dtos.*;
+import com.example.Leave.Management.entities.DayType;
 import com.example.Leave.Management.entities.LeaveDayType;
 import com.example.Leave.Management.exceptions.UserNotFoundException;
 import com.example.Leave.Management.mappers.LeaveDayTypeMapper;
@@ -21,7 +22,7 @@ public class LeaveDayTypeController {
     @PostMapping
     public ResponseEntity<?> createLeaveDayType(@Valid @RequestBody RegisterLeaveDayTypeDto request , UriComponentsBuilder uriBuilder){
         LeaveDayType leaveTypes = new LeaveDayType();
-        leaveTypes.setType(request.getType());
+        leaveTypes.setType(DayType.valueOf(request.getType()));
 
         var saved = leaveDayTypeRepository.save(leaveTypes);
         var response = leaveDayTypeMapper.toDto(saved);
@@ -44,12 +45,12 @@ public class LeaveDayTypeController {
     }
 
     @PutMapping("/{id}")
-    public ResponseEntity<LeaveDayTypeDto> updateLeaveType(@RequestBody UpdateLeaveTypeRequest request , @PathVariable(name="id") int id){
-        var type = leaveDayTypeRepository.findById(id).orElseThrow();
+    public ResponseEntity<LeaveDayTypeDto> updateLeaveType(@RequestBody UpdateLeaveDayTypeRequest request , @PathVariable(name="id") int id){
+        var type = leaveDayTypeRepository.findById(id).orElseThrow(null);
         if(type == null){
             return ResponseEntity.notFound().build();
         }
-        type.setType(request.getType());
+        type.setType(DayType.valueOf(request.getType()));
 
         leaveDayTypeRepository.save(type);
         return ResponseEntity.ok(leaveDayTypeMapper.toDto(type));

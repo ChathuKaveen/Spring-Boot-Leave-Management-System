@@ -4,6 +4,7 @@ import jakarta.persistence.*;
 import lombok.Getter;
 import lombok.Setter;
 
+import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.Date;
 
@@ -29,13 +30,13 @@ public class Leaves {
     private Status status;
 
     @Column(name = "days")
-    private int days;
+    private double days;
 
     @Column(name = "from_date")
-    private Date from_date;
+    private LocalDate from_date;
 
     @Column(name = "to_date")
-    private Date to_date;
+    private LocalDate to_date;
 
     @ManyToOne
     @JoinColumn( name = "from_date_type")
