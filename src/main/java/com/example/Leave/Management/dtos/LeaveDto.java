@@ -13,7 +13,7 @@ public class LeaveDto {
     private Long userId;
     private int leaveType;
     private String status;
-    private int days;
+    private double days;
     private Date from_date;
     private Date to_date;
     private Integer from_date_type;

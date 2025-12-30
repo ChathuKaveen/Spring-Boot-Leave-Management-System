@@ -52,10 +52,13 @@ public class LeaveController {
 
         leave.setStatus(Status.PENDING);
 
-        var leaveFromDayTypeFinder = leaveDayTypeRepository.findById(request.getFrom_date_type()).orElseThrow(()->new ResponseStatusException(HttpStatus.NOT_FOUND  , "This leave day type not found"));
-        var leaveToDayTypeFinder = leaveDayTypeRepository.findById(request.getTo_date_type()).orElseThrow(()->new ResponseStatusException(HttpStatus.NOT_FOUND  , "This leave day type not found"));
+        var leaveFromDayTypeFinder = leaveDayTypeRepository.findById(request.getFrom_date_type()).orElse(null);
+        //var leaveToDayTypeFinder = leaveDayTypeRepository.findById(request.getTo_date_type()).orElse(null);
+        if(leaveFromDayTypeFinder == null ){//|| leaveToDayTypeFinder == null
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(Map.of("message" , "Leave day type not found"));
+        }
         leave.setFrom_date_type(leaveFromDayTypeFinder);
-        leave.setTo_date_type(leaveToDayTypeFinder);
+        leave.setTo_date_type(leaveDayTypeRepository.findIdByType(DayType.FULL_DAY));
 
         //from to dates
         var fromDate = request.getFrom_date();
@@ -63,60 +66,58 @@ public class LeaveController {
         if(fromDate.isAfter(toDate)){
             throw new FromDateToDateException();
         }
-        if(leaveFromDayTypeFinder.getType() == DayType.HALF_DAY_MORNING && !fromDate.isEqual(toDate)){
-            throw new ResponseStatusException(
-                    HttpStatus.BAD_REQUEST,
-                    "HALF DAY MORNING leave must be for a single day"
-            );
+        if((leaveFromDayTypeFinder.getType() == DayType.HALF_DAY_MORNING || leaveFromDayTypeFinder.getType() == DayType.HALF_DAY_EVENING) && !fromDate.isEqual(toDate)){
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(Map.of("message" , "HALF DAY MORNING leave must be for a single day"));
         }
 
-        if (leaveToDayTypeFinder.getType() == DayType.HALF_DAY_EVENING
-                && !fromDate.isEqual(toDate)) {
-            throw new ResponseStatusException(
-                    HttpStatus.BAD_REQUEST,
-                    "HALF DAY EVENING leave must be for a single day"
-            );
-        }
+//        if (leaveToDayTypeFinder.getType() == DayType.HALF_DAY_EVENING
+//                && !fromDate.isEqual(toDate)) {
+//            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(Map.of("message" , "HALF DAY EVENING leave must be for a single day"));
+//        }
         leave.setFrom_date(fromDate);
         leave.setTo_date(toDate);
 
-        leave.setDays(calLeaveDays(fromDate ,toDate , leaveFromDayTypeFinder , leaveToDayTypeFinder));
-
+        leave.setDays(calLeaveDays(fromDate ,toDate , leaveFromDayTypeFinder ));//, leaveToDayTypeFinder
+        System.out.println(calLeaveDays(fromDate ,toDate , leaveFromDayTypeFinder ));
         var saved = leavesRepository.save(leave);
         var response = leaveMapper.toDto(saved);
         var uri = uriBuilder.path("/leave-day-type/{id}").buildAndExpand(response.getId()).toUri();
         return ResponseEntity.created(uri).body(response);
     }
 
-    private double calLeaveDays(LocalDate from , LocalDate to , LeaveDayType leaveFromDayTypeFinder , LeaveDayType leaveToDayTypeFinder){
+    private double calLeaveDays(LocalDate from , LocalDate to , LeaveDayType leaveFromDayTypeFinder ){//LeaveDayType leaveToDayTypeFinder
         var fromDayType = leaveFromDayTypeFinder.getType();
-        var toDayType = leaveToDayTypeFinder.getType();
+//        var toDayType = leaveToDayTypeFinder.getType();
 
-        if (to.isBefore(from)) {
-            throw new IllegalArgumentException("Invalid date range");
+        if(from.isAfter(to)){
+            throw new FromDateToDateException();
         }
         long totalDays = ChronoUnit.DAYS.between(from, to) + 1;
 
         if (totalDays > 1) {
-            if (fromDayType != DayType.FULL_DAY || toDayType != DayType.FULL_DAY) {
-                throw new IllegalArgumentException(
+            if (fromDayType != DayType.FULL_DAY ) {//|| toDayType != DayType.FULL_DAY
+                throw new ResponseStatusException(
+                        HttpStatus.BAD_REQUEST,
                         "Half-day leave is allowed only for a single day"
                 );
             }
             return totalDays;
         }
-        if (fromDayType == DayType.FULL_DAY && toDayType == DayType.FULL_DAY) {
+        if (fromDayType == DayType.FULL_DAY ) {//&& toDayType == DayType.FULL_DAY
             return 1.0;
         }
         if (fromDayType == DayType.HALF_DAY_MORNING
-                && toDayType == DayType.HALF_DAY_EVENING) {
-            return 1.0;
-        }
-        if (fromDayType == DayType.HALF_DAY_MORNING
-                || toDayType == DayType.HALF_DAY_EVENING) {
+               ) {// && toDayType == DayType.HALF_DAY_EVENING
             return 0.5;
         }
-        throw new IllegalArgumentException("Invalid leave day combination");
+        if (fromDayType == DayType.HALF_DAY_EVENING
+                ) {//|| toDayType == DayType.HALF_DAY_EVENING
+            return 0.5;
+        }
+        throw new ResponseStatusException(
+                HttpStatus.BAD_REQUEST,
+                "Invalid leave day combination"
+        );
     }
 
 //    @GetMapping
@@ -157,6 +158,6 @@ public class LeaveController {
 
     @ExceptionHandler(FromDateToDateException.class)
     public ResponseEntity<Map<String , String>> handleUserNotFound(){
-        return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(Map.of("error" , "Your Leave End date can't be before Leave beginning Day"));
+        return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(Map.of("error" , "To Date cant be before From Date"));
     }
 }
