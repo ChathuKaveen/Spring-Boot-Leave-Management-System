@@ -14,17 +14,19 @@ import com.example.Leave.Management.repositories.LeaveTypeRepository;
 import com.example.Leave.Management.repositories.LeavesRepository;
 import com.example.Leave.Management.repositories.UserRepository;
 import lombok.AllArgsConstructor;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.http.HttpStatus;
-import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 import org.springframework.web.server.ResponseStatusException;
 import java.time.LocalDate;
 import java.time.temporal.ChronoUnit;
-import java.util.Map;
+
 @AllArgsConstructor
 @Service
 public class LeaveService {
+    private static final Logger log = LoggerFactory.getLogger(LeaveService.class);
     private final UserRepository userRepository;
     private final LeaveTypeRepository leaveTypeRepository;
     private final LeaveDayTypeRepository leaveDayTypeRepository;
@@ -34,6 +36,7 @@ public class LeaveService {
     public double calLeaveDays(LocalDate from , LocalDate to , LeaveDayType leaveFromDayTypeFinder ){
         var fromDayType = leaveFromDayTypeFinder.getType();
         if(from.isAfter(to)){
+            log.info("HIT 3");
             throw new FromDateToDateException();
         }
         long totalDays = ChronoUnit.DAYS.between(from, to) + 1;
@@ -77,7 +80,6 @@ public class LeaveService {
         leave.setStatus(Status.PENDING);
 
         var leaveFromDayTypeFinder = leaveDayTypeRepository.findById(request.getFrom_date_type()).orElse(null);
-
         if(leaveFromDayTypeFinder == null ){
             throw new LeaveTypeNotFoundException();
         }
@@ -87,6 +89,11 @@ public class LeaveService {
         //from to dates
         var fromDate = request.getFrom_date();
         var toDate = request.getTo_date()!= null ? request.getTo_date() : fromDate;
+        var overlappingLeaves = leavesRepository.findOverlappingLeaves(userId , fromDate , toDate);
+        if(!overlappingLeaves.isEmpty()){
+            throw new LeavesOverlappingException();
+        }
+
         if(fromDate.isAfter(toDate)){
             throw new FromDateToDateException();
         }
@@ -121,7 +128,6 @@ public class LeaveService {
     public LeaveDto updateLeave(UpdateLeaveRequest request, Long id){
         var leave = leavesRepository.findById(id)
                 .orElseThrow(LeaveNotFoundException::new);
-
         if (request.getLeaveType() != null) {
             var leaveType = leaveTypeRepository
                     .findById(request.getLeaveType())
@@ -129,16 +135,90 @@ public class LeaveService {
             leave.setLeaveTypes(leaveType);
         }
 
-        if (request.getFrom_date() != null) {
-            leave.setFrom_date(request.getFrom_date());
+        var finalFrom_date = request.getFrom_date();
+        var finalTo_date = request.getTo_date();
+
+        var exsistingFrom_date = leave.getFrom_date();
+        var exsistingTo_date = leave.getTo_date();
+
+        if (finalFrom_date != null && finalTo_date == null) {
+            var overlappingLeaves = leavesRepository.findOverlappingLeavesForUpdate(leave.getId(),leave.getUser().getId() , finalFrom_date, exsistingTo_date);
+            if(!overlappingLeaves.isEmpty()){
+                throw new LeavesOverlappingException();
+            }
+            if (exsistingTo_date.isBefore(finalFrom_date)) {
+                log.info("HIT 1 {} - {}" , exsistingTo_date , finalFrom_date);
+                throw new FromDateToDateException();
+            }
+            if(request.getFrom_date_type() != null){
+                leave.setDays(calLeaveDays(
+                        finalFrom_date,
+                        exsistingTo_date,
+                        leaveDayTypeRepository
+                                .findById(request.getFrom_date_type())
+                                .orElseThrow(LeaveDayTyoNotFoundException::new))
+                );
+            }
+            if(request.getFrom_date_type() == null){
+                var type = leave.getFrom_date_type();
+                leave.setDays(calLeaveDays(
+                        finalFrom_date ,
+                        exsistingTo_date,
+                        type)
+                );
+            }
+            leave.setFrom_date(finalFrom_date);
+        }else if(finalFrom_date == null && finalTo_date != null){
+            var overlappingLeaves = leavesRepository.findOverlappingLeavesForUpdate(leave.getId(),leave.getUser().getId() ,exsistingFrom_date, finalTo_date);
+            if(!overlappingLeaves.isEmpty()){
+                throw new LeavesOverlappingException();
+            }
+            if (exsistingTo_date.isBefore(exsistingFrom_date)) {
+                log.info("HIT 2");
+                throw new FromDateToDateException();
+            }
+
+            leave.setTo_date(finalTo_date);
+        } else if (finalFrom_date != null && finalTo_date != null) {
+            var overlappingLeaves = leavesRepository.findOverlappingLeavesForUpdate(leave.getId(),leave.getUser().getId() , finalFrom_date, finalTo_date);
+            if(!overlappingLeaves.isEmpty()){
+                throw new LeavesOverlappingException();
+            }
+            if (finalTo_date.isBefore(finalFrom_date)) {
+                throw new FromDateToDateException();
+            }
+            if(request.getFrom_date_type() != null){
+                leave.setDays(calLeaveDays(
+                        finalFrom_date,
+                        finalTo_date,
+                        leaveDayTypeRepository
+                                .findById(request.getFrom_date_type())
+                                .orElseThrow(LeaveDayTyoNotFoundException::new))
+                );
+            }
+            if(request.getFrom_date_type() == null){
+                var type = leave.getFrom_date_type();
+                leave.setDays(calLeaveDays(
+                        finalFrom_date ,
+                        finalTo_date,
+                        type)
+                );
+            }
+            leave.setFrom_date(finalFrom_date);
+            leave.setTo_date(finalTo_date);
         }
 
-        if (request.getTo_date() != null) {
-            leave.setTo_date(request.getTo_date());
-        }
-        if (leave.getTo_date().isBefore(leave.getFrom_date())) {
-            throw new FromDateToDateException();
-        }
+//        if (request.getTo_date() != null) {
+//            var overlappingLeaves = leavesRepository.findOverlappingLeaves(leave.getUser().getId() , leave.getFrom_date() , request.getTo_date());
+//            if(!overlappingLeaves.isEmpty()){
+//                throw new LeavesOverlappingException();
+//            }
+//            if (request.getTo_date().isBefore(leave.getFrom_date())) {
+//                throw new FromDateToDateException();
+//            }
+//            leave.setTo_date(request.getTo_date());
+//        }
+
 
         if (request.getFrom_date_type() != null) {
             var dayType = leaveDayTypeRepository
@@ -146,26 +226,6 @@ public class LeaveService {
                     .orElseThrow(LeaveDayTyoNotFoundException::new);
             leave.setFrom_date_type(dayType);
         }
-
-        if(request.getFrom_date() != null && request.getFrom_date_type() != null){
-            leave.setDays(calLeaveDays(
-                    request.getFrom_date() ,
-                    leave.getTo_date() ,
-                    leaveDayTypeRepository
-                            .findById(request.getFrom_date_type())
-                            .orElseThrow(LeaveDayTyoNotFoundException::new))
-            );
-        }
-
-        if(request.getFrom_date() != null && request.getFrom_date_type() == null){
-            var type = leave.getFrom_date_type();
-            leave.setDays(calLeaveDays(
-                    request.getFrom_date() ,
-                    leave.getTo_date() ,
-                    type)
-            );
-        }
-
 
         if (request.getReason() != null) {
             leave.setReason(request.getReason());
@@ -178,7 +238,7 @@ public class LeaveService {
     public void deleteLeave(Long id){
         var u  = leavesRepository.findById(id).orElse(null);
         if(u == null){
-            throw  new UserNotFoundException();
+            throw  new LeaveNotFoundException();
         }
         leavesRepository.delete(u);
     }
