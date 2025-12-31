@@ -55,22 +55,5 @@ public class LeaveController {
         return ResponseEntity.noContent().build();
     }
 
-    @ExceptionHandler(FromDateToDateException.class)
-    public ResponseEntity<Map<String , String>> handleUserNotFound(){
-        return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(Map.of("error" , "To Date cant be before From Date"));
-    }
 
-    @ExceptionHandler(LeaveTypeNotFoundException.class)
-    public ResponseEntity<Map<String , String>> handleLeaveTypeNotFound(){
-        return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(Map.of("error" , "Leave day type not found"));
-    }
-    @ExceptionHandler(HalfDayMustBeSeperateDayException.class)
-    public ResponseEntity<Map<String , String>> handleHalfDay(){
-        return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(Map.of("error" , "HALF DAY MORNING leave must be for a single day"));
-    }
-
-    @ExceptionHandler(LeaveNotFoundException.class)
-    public ResponseEntity<Map<String , String>> leaveNotFoundExceptionHandler(){
-        return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(Map.of("error" , "Leave not found"));
-    }
 }

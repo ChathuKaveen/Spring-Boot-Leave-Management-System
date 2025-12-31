@@ -40,10 +40,7 @@ public class LeaveService {
 
         if (totalDays > 1) {
             if (fromDayType != DayType.FULL_DAY ) {
-                throw new ResponseStatusException(
-                        HttpStatus.BAD_REQUEST,
-                        "Half-day leave is allowed only for a single day"
-                );
+                throw new HalfDayMustBeSeperateDayException();
             }
             return totalDays;
         }
@@ -74,7 +71,7 @@ public class LeaveService {
         leave.setUser(user);
 
 
-        var leaveTypes = leaveTypeRepository.findById(request.getLeaveType()).orElseThrow(()->new ResponseStatusException(HttpStatus.NOT_FOUND  , "This leave type not found"));
+        var leaveTypes = leaveTypeRepository.findById(request.getLeaveType()).orElseThrow(LeaveTypeNotFoundException::new);
         leave.setLeaveTypes(leaveTypes);
         leave.setReason(request.getReason());
 
@@ -108,7 +105,7 @@ public class LeaveService {
     }
 
     public LeaveDto getLeaveById(Long id){
-        var type = leavesRepository.findById(id).orElseThrow(null);
+        var type = leavesRepository.findById(id).orElse(null);
         if(type == null){
             throw new LeaveNotFoundException();
         }
@@ -117,14 +114,12 @@ public class LeaveService {
 
     public LeaveDto updateLeave(UpdateLeaveRequest request, Long id){
         var leave = leavesRepository.findById(id)
-                .orElseThrow(() -> new ResponseStatusException(
-                        HttpStatus.NOT_FOUND, "Leave not found"));
+                .orElseThrow(LeaveNotFoundException::new);
 
         if (request.getLeaveType() != null) {
             var leaveType = leaveTypeRepository
                     .findById(request.getLeaveType())
-                    .orElseThrow(() -> new ResponseStatusException(
-                            HttpStatus.NOT_FOUND, "Leave type not found"));
+                    .orElseThrow(LeaveTypeNotFoundException::new);
             leave.setLeaveTypes(leaveType);
         }
 
@@ -142,19 +137,26 @@ public class LeaveService {
         if (request.getFrom_date_type() != null) {
             var dayType = leaveDayTypeRepository
                     .findById(request.getFrom_date_type())
-                    .orElseThrow(() -> new ResponseStatusException(
-                            HttpStatus.NOT_FOUND, "Leave day type not found"));
+                    .orElseThrow(LeaveDayTyoNotFoundException::new);
             leave.setFrom_date_type(dayType);
         }
 
-        if(request.getFrom_date() != null || request.getFrom_date_type() != null){
+        if(request.getFrom_date() != null && request.getFrom_date_type() != null){
             leave.setDays(calLeaveDays(
                     request.getFrom_date() ,
                     leave.getTo_date() ,
                     leaveDayTypeRepository
                             .findById(request.getFrom_date_type())
-                            .orElseThrow(() -> new ResponseStatusException(
-                                    HttpStatus.NOT_FOUND, "Leave day type not found")))
+                            .orElseThrow(LeaveDayTyoNotFoundException::new))
+            );
+        }
+
+        if(request.getFrom_date() != null && request.getFrom_date_type() == null){
+            var type = leave.getFrom_date_type();
+            leave.setDays(calLeaveDays(
+                    request.getFrom_date() ,
+                    leave.getTo_date() ,
+                    type)
             );
         }
 
