@@ -6,11 +6,13 @@ import com.example.Leave.Management.mappers.LeaveMapper;
 import com.example.Leave.Management.repositories.LeaveDayTypeRepository;
 import com.example.Leave.Management.repositories.LeaveTypeRepository;
 import com.example.Leave.Management.repositories.LeavesRepository;
+import com.example.Leave.Management.repositories.UserRepository;
 import com.example.Leave.Management.services.LeaveService;
 import jakarta.validation.Valid;
 import lombok.AllArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.util.UriComponentsBuilder;
 
@@ -26,7 +28,7 @@ public class LeaveController {
     private final LeaveMapper leaveMapper;
 
     private final LeaveService leaveService;
-
+    private final UserRepository userRepository;
     @PostMapping
     public ResponseEntity<?> createLeaveDayType(@Valid @RequestBody RegisterLeaveRequest request , UriComponentsBuilder uriBuilder){
         var response = leaveService.createLeave(request);
@@ -35,8 +37,8 @@ public class LeaveController {
     }
 
     @GetMapping
-    public Iterable<LeaveDto> getLeaves(){
-        return leavesRepository.findAll().stream().map(leaveMapper::toDto).toList();
+    public Iterable<LeaveDto> getMyLeaves(){
+        return leaveService.getMyLeaves();
     }
 
     @GetMapping("/{id}")

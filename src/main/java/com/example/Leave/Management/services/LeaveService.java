@@ -66,7 +66,6 @@ public class LeaveService {
 
         var authentication = SecurityContextHolder.getContext().getAuthentication();
         var userId =(Long) authentication.getPrincipal();
-        System.out.println(userId);
         var user = userRepository.findById(userId).orElse(null);
         leave.setUser(user);
 
@@ -110,6 +109,13 @@ public class LeaveService {
             throw new LeaveNotFoundException();
         }
         return leaveMapper.toDto(type);
+    }
+
+    public Iterable<LeaveDto> getMyLeaves(){
+        var authentication = SecurityContextHolder.getContext().getAuthentication();
+        var userId =(Long) authentication.getPrincipal();
+        var user = userRepository.findById(userId).orElse(null);
+        return leavesRepository.findByUser(user).stream().map(leaveMapper::toDto).toList();
     }
 
     public LeaveDto updateLeave(UpdateLeaveRequest request, Long id){

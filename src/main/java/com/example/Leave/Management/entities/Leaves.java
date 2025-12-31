@@ -52,7 +52,7 @@ public class Leaves {
     @Column(name = "updated_by")
     private int updated_by;
 
-    @Column(name = "updated_on")
+    @Column(name = "updated_on" , updatable = false , insertable = false)
     private LocalDateTime updated_on;
 
 
