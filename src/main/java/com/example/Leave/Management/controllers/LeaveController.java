@@ -12,6 +12,7 @@ import com.example.Leave.Management.repositories.LeaveDayTypeRepository;
 import com.example.Leave.Management.repositories.LeaveTypeRepository;
 import com.example.Leave.Management.repositories.LeavesRepository;
 import com.example.Leave.Management.repositories.UserRepository;
+import com.example.Leave.Management.services.LeaveService;
 import jakarta.validation.Valid;
 import lombok.AllArgsConstructor;
 import org.springframework.http.HttpStatus;
@@ -34,6 +35,7 @@ public class LeaveController {
     private final LeaveDayTypeRepository leaveDayTypeRepository;
     private final LeaveMapper leaveMapper;
     private final UserRepository userRepository;
+    private final LeaveService leaveService;
 
     @PostMapping
     public ResponseEntity<?> createLeaveDayType(@Valid @RequestBody RegisterLeaveRequest request , UriComponentsBuilder uriBuilder){
@@ -53,8 +55,8 @@ public class LeaveController {
         leave.setStatus(Status.PENDING);
 
         var leaveFromDayTypeFinder = leaveDayTypeRepository.findById(request.getFrom_date_type()).orElse(null);
-        //var leaveToDayTypeFinder = leaveDayTypeRepository.findById(request.getTo_date_type()).orElse(null);
-        if(leaveFromDayTypeFinder == null ){//|| leaveToDayTypeFinder == null
+
+        if(leaveFromDayTypeFinder == null ){
             return ResponseEntity.status(HttpStatus.NOT_FOUND).body(Map.of("message" , "Leave day type not found"));
         }
         leave.setFrom_date_type(leaveFromDayTypeFinder);
@@ -70,91 +72,94 @@ public class LeaveController {
             return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(Map.of("message" , "HALF DAY MORNING leave must be for a single day"));
         }
 
-//        if (leaveToDayTypeFinder.getType() == DayType.HALF_DAY_EVENING
-//                && !fromDate.isEqual(toDate)) {
-//            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(Map.of("message" , "HALF DAY EVENING leave must be for a single day"));
-//        }
         leave.setFrom_date(fromDate);
         leave.setTo_date(toDate);
 
-        leave.setDays(calLeaveDays(fromDate ,toDate , leaveFromDayTypeFinder ));//, leaveToDayTypeFinder
-        System.out.println(calLeaveDays(fromDate ,toDate , leaveFromDayTypeFinder ));
+        leave.setDays(leaveService.calLeaveDays(fromDate ,toDate , leaveFromDayTypeFinder ));//, leaveToDayTypeFinder
         var saved = leavesRepository.save(leave);
         var response = leaveMapper.toDto(saved);
         var uri = uriBuilder.path("/leave-day-type/{id}").buildAndExpand(response.getId()).toUri();
         return ResponseEntity.created(uri).body(response);
     }
 
-    private double calLeaveDays(LocalDate from , LocalDate to , LeaveDayType leaveFromDayTypeFinder ){//LeaveDayType leaveToDayTypeFinder
-        var fromDayType = leaveFromDayTypeFinder.getType();
-//        var toDayType = leaveToDayTypeFinder.getType();
 
-        if(from.isAfter(to)){
-            throw new FromDateToDateException();
-        }
-        long totalDays = ChronoUnit.DAYS.between(from, to) + 1;
 
-        if (totalDays > 1) {
-            if (fromDayType != DayType.FULL_DAY ) {//|| toDayType != DayType.FULL_DAY
-                throw new ResponseStatusException(
-                        HttpStatus.BAD_REQUEST,
-                        "Half-day leave is allowed only for a single day"
-                );
-            }
-            return totalDays;
-        }
-        if (fromDayType == DayType.FULL_DAY ) {//&& toDayType == DayType.FULL_DAY
-            return 1.0;
-        }
-        if (fromDayType == DayType.HALF_DAY_MORNING
-               ) {// && toDayType == DayType.HALF_DAY_EVENING
-            return 0.5;
-        }
-        if (fromDayType == DayType.HALF_DAY_EVENING
-                ) {//|| toDayType == DayType.HALF_DAY_EVENING
-            return 0.5;
-        }
-        throw new ResponseStatusException(
-                HttpStatus.BAD_REQUEST,
-                "Invalid leave day combination"
-        );
+    @GetMapping
+    public Iterable<LeaveDto> getLeaves(){
+        return leavesRepository.findAll().stream().map(leaveMapper::toDto).toList();
     }
 
-//    @GetMapping
-//    public Iterable<LeaveDayTypeDto> getLeaveDayTypes(){
-//        return leaveDayTypeRepository.findAll().stream().map(leaveDayTypeMapper::toDto).toList();
-//    }
+    @GetMapping("/{id}")
+    public ResponseEntity<LeaveDto> getLeaveById(@PathVariable(name = "id") Long id){
+        var type = leavesRepository.findById(id).orElseThrow(null);
+        if(type == null){
+            return ResponseEntity.notFound().build();
+        }
+        return ResponseEntity.ok(leaveMapper.toDto(type));
+    }
 
-//    @GetMapping("/{id}")
-//    public ResponseEntity<LeaveDayTypeDto> getLeaveTypeById(@PathVariable(name = "id") int id){
-//        var type = leaveDayTypeRepository.findById(id).orElseThrow(null);
-//        if(type == null){
-//            return ResponseEntity.notFound().build();
-//        }
-//        return ResponseEntity.ok(leaveDayTypeMapper.toDto(type));
-//    }
-//
-//    @PutMapping("/{id}")
-//    public ResponseEntity<LeaveDayTypeDto> updateLeaveType(@RequestBody UpdateLeaveTypeRequest request , @PathVariable(name="id") int id){
-//        var type = leaveDayTypeRepository.findById(id).orElseThrow();
-//        if(type == null){
-//            return ResponseEntity.notFound().build();
-//        }
-//        type.setType(request.getType());
-//
-//        leaveDayTypeRepository.save(type);
-//        return ResponseEntity.ok(leaveDayTypeMapper.toDto(type));
-//    }
-//
-//    @DeleteMapping("/{id}")
-//    public ResponseEntity<LeaveTypeDto> deleteLeaveType(@PathVariable(name="id") int id){
-//        var u  = leaveDayTypeRepository.findById(id).orElseThrow();
-//        if(u == null){
-//            throw  new UserNotFoundException();
-//        }
-//        leaveDayTypeRepository.delete(u);
-//        return ResponseEntity.noContent().build();
-//    }
+    @PatchMapping("/{id}")
+    public ResponseEntity<?> updateLeave(@RequestBody UpdateLeaveRequest request , @PathVariable(name="id") Long id){
+        var leave = leavesRepository.findById(id)
+                .orElseThrow(() -> new ResponseStatusException(
+                        HttpStatus.NOT_FOUND, "Leave not found"));
+
+        if (request.getLeaveType() != null) {
+            var leaveType = leaveTypeRepository
+                    .findById(request.getLeaveType())
+                    .orElseThrow(() -> new ResponseStatusException(
+                            HttpStatus.NOT_FOUND, "Leave type not found"));
+            leave.setLeaveTypes(leaveType);
+        }
+
+        if (request.getFrom_date() != null) {
+            leave.setFrom_date(request.getFrom_date());
+        }
+
+        if (request.getTo_date() != null) {
+            leave.setTo_date(request.getTo_date());
+        }
+        if (leave.getTo_date().isBefore(leave.getFrom_date())) {
+            throw new FromDateToDateException();
+        }
+
+        if (request.getFrom_date_type() != null) {
+            var dayType = leaveDayTypeRepository
+                    .findById(request.getFrom_date_type())
+                    .orElseThrow(() -> new ResponseStatusException(
+                            HttpStatus.NOT_FOUND, "Leave day type not found"));
+            leave.setFrom_date_type(dayType);
+        }
+
+        if(request.getFrom_date() != null || request.getFrom_date_type() != null){
+            leave.setDays(leaveService.calLeaveDays(
+                                            request.getFrom_date() ,
+                                            leave.getTo_date() ,
+                                            leaveDayTypeRepository
+                                                    .findById(request.getFrom_date_type())
+                                                    .orElseThrow(() -> new ResponseStatusException(
+                                                            HttpStatus.NOT_FOUND, "Leave day type not found")))
+            );
+        }
+
+
+        if (request.getReason() != null) {
+            leave.setReason(request.getReason());
+        }
+
+        leavesRepository.save(leave);
+        return ResponseEntity.ok(leaveMapper.toDto(leave));
+    }
+
+    @DeleteMapping("/{id}")
+    public ResponseEntity<LeaveTypeDto> deleteLeave(@PathVariable(name="id") Long id){
+        var u  = leavesRepository.findById(id).orElseThrow();
+        if(u == null){
+            throw  new UserNotFoundException();
+        }
+        leavesRepository.delete(u);
+        return ResponseEntity.noContent().build();
+    }
 
     @ExceptionHandler(FromDateToDateException.class)
     public ResponseEntity<Map<String , String>> handleUserNotFound(){
