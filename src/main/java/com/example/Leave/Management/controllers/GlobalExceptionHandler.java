@@ -50,4 +50,9 @@ public class GlobalExceptionHandler {
     public ResponseEntity<Map<String , String>> leavesOverlapping(){
         return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(Map.of("error" , "You already have some leaves that days range"));
     }
+
+    @ExceptionHandler(LeaveDayCantBeforeTodayException.class)
+    public ResponseEntity<Map<String , String>> leaveDayMustPastToday(LeaveDayCantBeforeTodayException e){
+        return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(Map.of("error" , e.getMessage()));
+    }
 }

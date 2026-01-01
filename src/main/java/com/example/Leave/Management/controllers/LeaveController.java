@@ -1,7 +1,6 @@
 package com.example.Leave.Management.controllers;
 
 import com.example.Leave.Management.dtos.*;
-import com.example.Leave.Management.exceptions.*;
 import com.example.Leave.Management.mappers.LeaveMapper;
 import com.example.Leave.Management.repositories.LeaveDayTypeRepository;
 import com.example.Leave.Management.repositories.LeaveTypeRepository;
@@ -10,13 +9,9 @@ import com.example.Leave.Management.repositories.UserRepository;
 import com.example.Leave.Management.services.LeaveService;
 import jakarta.validation.Valid;
 import lombok.AllArgsConstructor;
-import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.util.UriComponentsBuilder;
-
-import java.util.Map;
 
 @RestController
 @AllArgsConstructor
@@ -51,9 +46,15 @@ public class LeaveController {
         return ResponseEntity.ok(leaveService.updateLeave(request, id));
     }
 
-    @DeleteMapping("/{id}")
-    public ResponseEntity<LeaveTypeDto> deleteLeave(@PathVariable(name="id") Long id){
+    @DeleteMapping("delete/{id}")
+    public ResponseEntity<LeaveDto> deleteLeave(@PathVariable(name="id") Long id){
         leaveService.deleteLeave(id);
+        return ResponseEntity.noContent().build();
+    }
+
+    @PatchMapping("cancel/{id}")
+    public ResponseEntity<LeaveDto> cancelLeave(@PathVariable(name="id") Long id){
+        leaveService.cancelLeave(id);
         return ResponseEntity.noContent().build();
     }
 

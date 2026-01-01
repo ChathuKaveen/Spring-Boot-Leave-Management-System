@@ -36,7 +36,6 @@ public class LeaveService {
     public double calLeaveDays(LocalDate from , LocalDate to , LeaveDayType leaveFromDayTypeFinder ){
         var fromDayType = leaveFromDayTypeFinder.getType();
         if(from.isAfter(to)){
-            log.info("HIT 3");
             throw new FromDateToDateException();
         }
         long totalDays = ChronoUnit.DAYS.between(from, to) + 1;
@@ -87,8 +86,12 @@ public class LeaveService {
         leave.setTo_date_type(leaveDayTypeRepository.findIdByType(DayType.FULL_DAY));
 
         //from to dates
+        var today = LocalDate.now();
         var fromDate = request.getFrom_date();
         var toDate = request.getTo_date()!= null ? request.getTo_date() : fromDate;
+        if(!fromDate.isBefore(today) || !toDate.isBefore(today)){
+            throw new LeaveDayCantBeforeTodayException("To-Date or From-Date must not be older date");
+        }
         var overlappingLeaves = leavesRepository.findOverlappingLeaves(userId , fromDate , toDate);
         if(!overlappingLeaves.isEmpty()){
             throw new LeavesOverlappingException();
@@ -134,7 +137,7 @@ public class LeaveService {
                     .orElseThrow(LeaveTypeNotFoundException::new);
             leave.setLeaveTypes(leaveType);
         }
-
+        var today = LocalDate.now();
         var finalFrom_date = request.getFrom_date();
         var finalTo_date = request.getTo_date();
 
@@ -142,12 +145,14 @@ public class LeaveService {
         var exsistingTo_date = leave.getTo_date();
 
         if (finalFrom_date != null && finalTo_date == null) {
+            if(finalFrom_date.isBefore(today)){
+                throw new LeaveDayCantBeforeTodayException("From-Date must not be older date");
+            }
             var overlappingLeaves = leavesRepository.findOverlappingLeavesForUpdate(leave.getId(),leave.getUser().getId() , finalFrom_date, exsistingTo_date);
             if(!overlappingLeaves.isEmpty()){
                 throw new LeavesOverlappingException();
             }
             if (exsistingTo_date.isBefore(finalFrom_date)) {
-                log.info("HIT 1 {} - {}" , exsistingTo_date , finalFrom_date);
                 throw new FromDateToDateException();
             }
             if(request.getFrom_date_type() != null){
@@ -173,13 +178,15 @@ public class LeaveService {
             if(!overlappingLeaves.isEmpty()){
                 throw new LeavesOverlappingException();
             }
-            if (exsistingTo_date.isBefore(exsistingFrom_date)) {
-                log.info("HIT 2");
+            if (finalTo_date.isBefore(exsistingFrom_date)) {
                 throw new FromDateToDateException();
             }
 
             leave.setTo_date(finalTo_date);
         } else if (finalFrom_date != null && finalTo_date != null) {
+            if(finalFrom_date.isBefore(today) || finalTo_date.isBefore(today)){
+                throw new LeaveDayCantBeforeTodayException("To-Date or From-Date must not be older date");
+            }
             var overlappingLeaves = leavesRepository.findOverlappingLeavesForUpdate(leave.getId(),leave.getUser().getId() , finalFrom_date, finalTo_date);
             if(!overlappingLeaves.isEmpty()){
                 throw new LeavesOverlappingException();
@@ -208,18 +215,6 @@ public class LeaveService {
             leave.setTo_date(finalTo_date);
         }
 
-//        if (request.getTo_date() != null) {
-//            var overlappingLeaves = leavesRepository.findOverlappingLeaves(leave.getUser().getId() , leave.getFrom_date() , request.getTo_date());
-//            if(!overlappingLeaves.isEmpty()){
-//                throw new LeavesOverlappingException();
-//            }
-//            if (request.getTo_date().isBefore(leave.getFrom_date())) {
-//                throw new FromDateToDateException();
-//            }
-//            leave.setTo_date(request.getTo_date());
-//        }
-
-
         if (request.getFrom_date_type() != null) {
             var dayType = leaveDayTypeRepository
                     .findById(request.getFrom_date_type())
@@ -241,5 +236,24 @@ public class LeaveService {
             throw  new LeaveNotFoundException();
         }
         leavesRepository.delete(u);
+    }
+
+    public void cancelLeave(Long id){
+        var leave = leavesRepository.findById(id) .orElseThrow(LeaveNotFoundException::new);
+        var exsistingFrom_date = leave.getFrom_date();
+        var today = LocalDate.now();
+        var leaveStatus = leave.getStatus();
+
+        if (leaveStatus == Status.REJECTED) {
+            throw new LeaveDayCantBeforeTodayException("Can't Cancel rejected leaves");
+        }
+        if (leaveStatus == Status.CANCELLED) {
+            throw new LeaveDayCantBeforeTodayException("Leave is already cancelled");
+        }
+        if (exsistingFrom_date.isBefore(today)) {
+            throw new LeaveDayCantBeforeTodayException("Can't Cancel past leaves");
+        }
+        leave.setStatus(Status.CANCELLED);
+        leavesRepository.save(leave);
     }
 }
