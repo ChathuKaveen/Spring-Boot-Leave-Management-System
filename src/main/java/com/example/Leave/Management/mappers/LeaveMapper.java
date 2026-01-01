@@ -1,6 +1,6 @@
 package com.example.Leave.Management.mappers;
 
-import com.example.Leave.Management.dtos.LeaveDto;
+import com.example.Leave.Management.dtos.LeavesDtos.LeaveDto;
 import com.example.Leave.Management.entities.Leaves;
 import org.mapstruct.Mapper;
 import org.mapstruct.Mapping;

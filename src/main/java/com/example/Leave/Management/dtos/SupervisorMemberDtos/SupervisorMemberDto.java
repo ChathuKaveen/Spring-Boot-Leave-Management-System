@@ -1,8 +1,7 @@
-package com.example.Leave.Management.dtos;
+package com.example.Leave.Management.dtos.SupervisorMemberDtos;
 
 import com.example.Leave.Management.entities.SupervisorType;
 import com.example.Leave.Management.entities.User;
-import jakarta.persistence.*;
 import lombok.Data;
 
 @Data

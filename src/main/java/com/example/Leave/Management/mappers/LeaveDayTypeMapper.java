@@ -1,6 +1,6 @@
 package com.example.Leave.Management.mappers;
 
-import com.example.Leave.Management.dtos.LeaveDayTypeDto;
+import com.example.Leave.Management.dtos.LeaveDayTypeDtos.LeaveDayTypeDto;
 import com.example.Leave.Management.entities.LeaveDayType;
 import org.mapstruct.Mapper;
 

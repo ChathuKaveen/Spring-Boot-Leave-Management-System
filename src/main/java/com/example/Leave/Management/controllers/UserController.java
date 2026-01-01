@@ -1,9 +1,9 @@
 package com.example.Leave.Management.controllers;
 
-import com.example.Leave.Management.dtos.ChangePasswordRequest;
-import com.example.Leave.Management.dtos.RegisterUserRequest;
-import com.example.Leave.Management.dtos.UpdateUserRequest;
-import com.example.Leave.Management.dtos.UserDto;
+import com.example.Leave.Management.dtos.UserDtos.ChangePasswordRequest;
+import com.example.Leave.Management.dtos.UserDtos.RegisterUserRequest;
+import com.example.Leave.Management.dtos.UserDtos.UpdateUserRequest;
+import com.example.Leave.Management.dtos.UserDtos.UserDto;
 import com.example.Leave.Management.exceptions.UserNotFoundException;
 import com.example.Leave.Management.mappers.UserMapper;
 import com.example.Leave.Management.repositories.UserRepository;

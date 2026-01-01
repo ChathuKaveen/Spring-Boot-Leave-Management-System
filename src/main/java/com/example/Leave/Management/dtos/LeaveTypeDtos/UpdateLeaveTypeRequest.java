@@ -1,7 +1,5 @@
-package com.example.Leave.Management.dtos;
+package com.example.Leave.Management.dtos.LeaveTypeDtos;
 
-import com.example.Leave.Management.entities.DayType;
-import jakarta.persistence.Column;
 import lombok.Data;
 
 @Data

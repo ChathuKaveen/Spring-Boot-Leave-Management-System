@@ -1,20 +1,16 @@
 package com.example.Leave.Management.services;
 
-import com.example.Leave.Management.dtos.RegisterUserRequest;
-import com.example.Leave.Management.dtos.UpdateUserRequest;
-import com.example.Leave.Management.dtos.UserDto;
+import com.example.Leave.Management.dtos.UserDtos.RegisterUserRequest;
+import com.example.Leave.Management.dtos.UserDtos.UpdateUserRequest;
+import com.example.Leave.Management.dtos.UserDtos.UserDto;
 import com.example.Leave.Management.entities.Role;
-import com.example.Leave.Management.entities.User;
 import com.example.Leave.Management.exceptions.UserAlreadyExisist;
 import com.example.Leave.Management.exceptions.UserNotFoundException;
 import com.example.Leave.Management.mappers.UserMapper;
 import com.example.Leave.Management.repositories.UserRepository;
 import lombok.AllArgsConstructor;
-import org.springframework.http.ResponseEntity;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
-
-import java.util.Map;
 
 @Service
 @AllArgsConstructor

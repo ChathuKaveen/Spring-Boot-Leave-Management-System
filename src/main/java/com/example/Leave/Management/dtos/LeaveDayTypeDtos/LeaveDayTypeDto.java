@@ -1,4 +1,4 @@
-package com.example.Leave.Management.dtos;
+package com.example.Leave.Management.dtos.LeaveDayTypeDtos;
 
 import lombok.AllArgsConstructor;
 import lombok.Getter;

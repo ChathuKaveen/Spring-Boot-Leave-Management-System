@@ -1,6 +1,8 @@
 package com.example.Leave.Management.controllers;
 
-import com.example.Leave.Management.dtos.*;
+import com.example.Leave.Management.dtos.LeavesDtos.LeaveDto;
+import com.example.Leave.Management.dtos.LeavesDtos.RegisterLeaveRequest;
+import com.example.Leave.Management.dtos.LeavesDtos.UpdateLeaveRequest;
 import com.example.Leave.Management.mappers.LeaveMapper;
 import com.example.Leave.Management.repositories.LeaveDayTypeRepository;
 import com.example.Leave.Management.repositories.LeaveTypeRepository;

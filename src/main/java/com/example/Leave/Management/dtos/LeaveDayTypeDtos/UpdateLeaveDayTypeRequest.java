@@ -1,4 +1,4 @@
-package com.example.Leave.Management.dtos;
+package com.example.Leave.Management.dtos.LeaveDayTypeDtos;
 
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.Size;

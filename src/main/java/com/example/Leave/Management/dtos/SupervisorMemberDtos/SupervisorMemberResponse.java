@@ -1,7 +1,6 @@
-package com.example.Leave.Management.dtos;
+package com.example.Leave.Management.dtos.SupervisorMemberDtos;
 
 import com.example.Leave.Management.entities.SupervisorType;
-import lombok.Data;
 import lombok.Getter;
 import lombok.Setter;
 

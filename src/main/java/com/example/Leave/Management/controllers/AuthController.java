@@ -2,8 +2,8 @@ package com.example.Leave.Management.controllers;
 
 import com.example.Leave.Management.configs.JwtConfig;
 import com.example.Leave.Management.dtos.JwtResponse;
-import com.example.Leave.Management.dtos.LoginRequest;
-import com.example.Leave.Management.dtos.UserDto;
+import com.example.Leave.Management.dtos.UserDtos.LoginRequest;
+import com.example.Leave.Management.dtos.UserDtos.UserDto;
 import com.example.Leave.Management.mappers.UserMapper;
 import com.example.Leave.Management.repositories.UserRepository;
 import com.example.Leave.Management.services.JwtService;

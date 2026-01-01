@@ -1,7 +1,7 @@
 package com.example.Leave.Management.mappers;
 
-import com.example.Leave.Management.dtos.SupervisorMemberDto;
-import com.example.Leave.Management.dtos.SupervisorMemberResponse;
+import com.example.Leave.Management.dtos.SupervisorMemberDtos.SupervisorMemberDto;
+import com.example.Leave.Management.dtos.SupervisorMemberDtos.SupervisorMemberResponse;
 import com.example.Leave.Management.entities.SupervisorMember;
 import org.mapstruct.Mapper;
 import org.mapstruct.Mapping;

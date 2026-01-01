@@ -1,6 +1,9 @@
 package com.example.Leave.Management.controllers;
 
-import com.example.Leave.Management.dtos.*;
+import com.example.Leave.Management.dtos.LeaveDayTypeDtos.LeaveDayTypeDto;
+import com.example.Leave.Management.dtos.LeaveDayTypeDtos.RegisterLeaveDayTypeDto;
+import com.example.Leave.Management.dtos.LeaveDayTypeDtos.UpdateLeaveDayTypeRequest;
+import com.example.Leave.Management.dtos.LeaveTypeDtos.LeaveTypeDto;
 import com.example.Leave.Management.entities.DayType;
 import com.example.Leave.Management.entities.LeaveDayType;
 import com.example.Leave.Management.exceptions.UserNotFoundException;

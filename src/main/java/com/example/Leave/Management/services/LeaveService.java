@@ -1,8 +1,8 @@
 package com.example.Leave.Management.services;
 
-import com.example.Leave.Management.dtos.LeaveDto;
-import com.example.Leave.Management.dtos.RegisterLeaveRequest;
-import com.example.Leave.Management.dtos.UpdateLeaveRequest;
+import com.example.Leave.Management.dtos.LeavesDtos.LeaveDto;
+import com.example.Leave.Management.dtos.LeavesDtos.RegisterLeaveRequest;
+import com.example.Leave.Management.dtos.LeavesDtos.UpdateLeaveRequest;
 import com.example.Leave.Management.entities.DayType;
 import com.example.Leave.Management.entities.LeaveDayType;
 import com.example.Leave.Management.entities.Leaves;

@@ -1,7 +1,8 @@
 package com.example.Leave.Management.controllers;
 
 
-import com.example.Leave.Management.dtos.*;
+import com.example.Leave.Management.dtos.SupervisorMemberDtos.RegisterRelationshipRequest;
+import com.example.Leave.Management.dtos.SupervisorMemberDtos.UpdateRelationshipRequest;
 import com.example.Leave.Management.entities.SupervisorMember;
 import com.example.Leave.Management.entities.SupervisorType;
 import com.example.Leave.Management.exceptions.UserNotFoundException;

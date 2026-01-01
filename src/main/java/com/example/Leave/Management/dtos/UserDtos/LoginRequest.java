@@ -1,4 +1,4 @@
-package com.example.Leave.Management.dtos;
+package com.example.Leave.Management.dtos.UserDtos;
 
 import jakarta.validation.constraints.NotBlank;
 import lombok.Data;

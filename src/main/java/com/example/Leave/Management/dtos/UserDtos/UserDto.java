@@ -1,4 +1,4 @@
-package com.example.Leave.Management.dtos;
+package com.example.Leave.Management.dtos.UserDtos;
 
 import lombok.AllArgsConstructor;
 import lombok.Getter;

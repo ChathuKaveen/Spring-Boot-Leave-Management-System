@@ -1,6 +1,8 @@
 package com.example.Leave.Management.controllers;
 
-import com.example.Leave.Management.dtos.*;
+import com.example.Leave.Management.dtos.LeaveTypeDtos.LeaveTypeDto;
+import com.example.Leave.Management.dtos.LeaveTypeDtos.RegisterLeaveTypeRequest;
+import com.example.Leave.Management.dtos.LeaveTypeDtos.UpdateLeaveTypeRequest;
 import com.example.Leave.Management.entities.LeaveTypes;
 import com.example.Leave.Management.exceptions.UserNotFoundException;
 import com.example.Leave.Management.mappers.LeaveTypeMapper;

@@ -1,7 +1,6 @@
-package com.example.Leave.Management.dtos;
+package com.example.Leave.Management.dtos.SupervisorMemberDtos;
 
 import com.example.Leave.Management.entities.SupervisorType;
-import jakarta.validation.constraints.NotNull;
 import lombok.Data;
 
 @Data
