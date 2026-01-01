@@ -42,7 +42,7 @@ public class UserService {
     }
 
     public void deleteUser(Long id){
-        var u  = userRepository.findById(id).orElseThrow();
+        var u  = userRepository.findById(id).orElse(null);
         if(u == null){
             throw  new UserNotFoundException();
         }
@@ -50,7 +50,7 @@ public class UserService {
     }
 
     public UserDto updateUser(UpdateUserRequest request , Long id){
-        var u  = userRepository.findById(id).orElseThrow();
+        var u  = userRepository.findById(id).orElse(null);
         if(u == null){
             throw  new UserNotFoundException();
         }

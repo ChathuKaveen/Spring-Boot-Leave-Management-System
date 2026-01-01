@@ -1,12 +1,12 @@
-CREATE TABLE `leavesystem`.`supervisors` (
+CREATE TABLE `leavesystem`.`user_supervisor` (
   `id` BIGINT NOT NULL AUTO_INCREMENT,
-  `member` BIGINT NOT NULL,
-  `primary_supervisor` BIGINT NULL,
-  `secondary_supervisor` BIGINT NULL,
+  `user_id` BIGINT NOT NULL,
+  `supervisor_id` BIGINT NULL,
+  `type` VARCHAR(100) NULL,
   PRIMARY KEY (`id`),
-  INDEX `member Foreign_idx` (`member` ASC) VISIBLE,
-  CONSTRAINT `member Foreign`
-    FOREIGN KEY (`member`)
+  INDEX `user foreignkey_idx` (`user_id` ASC) VISIBLE,
+  CONSTRAINT `user foreignkey`
+    FOREIGN KEY (`user_id`)
     REFERENCES `leavesystem`.`user` (`id`)
     ON DELETE NO ACTION
     ON UPDATE NO ACTION);

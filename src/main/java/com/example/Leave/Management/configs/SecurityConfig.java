@@ -55,6 +55,7 @@ public class SecurityConfig {
                         .requestMatchers("/auth/refresh").permitAll()
                         .requestMatchers(HttpMethod.GET ,  "/users/**").hasRole(Role.ADMIN.name())
                         .requestMatchers(HttpMethod.POST ,  "/leave/**").authenticated()
+                        .requestMatchers(HttpMethod.POST ,  "/supervisor-relationship/**").authenticated()
                         .requestMatchers(HttpMethod.POST ,  "/leave-type/**").hasRole(Role.ADMIN.name())
                         .requestMatchers(HttpMethod.POST ,  "/leave-day-type/**").hasRole(Role.ADMIN.name())
                         .anyRequest().authenticated()
