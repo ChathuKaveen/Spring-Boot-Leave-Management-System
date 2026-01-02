@@ -55,4 +55,9 @@ public class GlobalExceptionHandler {
     public ResponseEntity<Map<String , String>> leaveDayMustPastToday(LeaveDayCantBeforeTodayException e){
         return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(Map.of("error" , e.getMessage()));
     }
+
+    @ExceptionHandler(YouAreNotSupervisorException.class)
+    public ResponseEntity<Map<String , String>> notASupervisor(YouAreNotSupervisorException e){
+        return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(Map.of("error" , e.getMessage()));
+    }
 }

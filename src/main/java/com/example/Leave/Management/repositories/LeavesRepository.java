@@ -38,4 +38,13 @@ public interface LeavesRepository extends JpaRepository<Leaves , Long> {
     List<Leaves> findOverlappingLeaves(@Param("uid") Long uid,
                                      @Param("fromDate") LocalDate fromDate,
                                      @Param("toDate") LocalDate toDate);
+
+
+
+    @Query("""
+                SELECT s
+                FROM Leaves s
+                WHERE s.user IN  :users
+            """)
+    List<Leaves> findLeavesByUsers(@Param("users") List<User> users);
 }

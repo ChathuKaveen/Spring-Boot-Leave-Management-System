@@ -52,12 +52,23 @@ public class SecurityConfig {
                 .csrf(AbstractHttpConfigurer::disable)
                 .authorizeHttpRequests(c->c
                        .requestMatchers("/auth/login").permitAll()
-                        .requestMatchers("/auth/refresh").permitAll()
+                        .requestMatchers(HttpMethod.POST,"/auth/refresh").permitAll()
+
+                        //Users ---> Admin Only
                         .requestMatchers(HttpMethod.GET ,  "/users/**").hasRole(Role.ADMIN.name())
-                        .requestMatchers(HttpMethod.POST ,  "/leave/**").authenticated()
-                        .requestMatchers(HttpMethod.POST ,  "/supervisor-relationship/**").authenticated()
-                        .requestMatchers(HttpMethod.POST ,  "/leave-type/**").hasRole(Role.ADMIN.name())
-                        .requestMatchers(HttpMethod.POST ,  "/leave-day-type/**").hasRole(Role.ADMIN.name())
+                        .requestMatchers(HttpMethod.DELETE ,  "/users/**").hasRole(Role.ADMIN.name())
+
+                        //Leave ---> only for authenticated users , delete only for admin
+                        .requestMatchers(HttpMethod.POST, "/leave/**").authenticated()
+                        .requestMatchers(HttpMethod.PUT, "/leave/**").authenticated()
+                        .requestMatchers(HttpMethod.PATCH, "/leave/**").authenticated()
+                        .requestMatchers(HttpMethod.GET, "/leave/**").authenticated()
+                        .requestMatchers(HttpMethod.DELETE, "/leave/**").hasRole(Role.ADMIN.name())
+
+                        // Admin-only resources
+                        .requestMatchers("/supervisor-relationship/**").hasRole(Role.ADMIN.name())
+                        .requestMatchers("/leave-type/**").hasRole(Role.ADMIN.name())
+                        .requestMatchers("/leave-day-type/**").hasRole(Role.ADMIN.name())
                         .anyRequest().authenticated()
                 ).addFilterBefore(jwtAuthenticationFilter , UsernamePasswordAuthenticationFilter.class)
                 .exceptionHandling(c->{

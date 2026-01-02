@@ -3,17 +3,24 @@ package com.example.Leave.Management.controllers;
 import com.example.Leave.Management.dtos.LeavesDtos.LeaveDto;
 import com.example.Leave.Management.dtos.LeavesDtos.RegisterLeaveRequest;
 import com.example.Leave.Management.dtos.LeavesDtos.UpdateLeaveRequest;
+import com.example.Leave.Management.entities.SupervisorMember;
+import com.example.Leave.Management.entities.User;
+import com.example.Leave.Management.exceptions.UserNotFoundException;
+import com.example.Leave.Management.exceptions.YouAreNotSupervisorException;
 import com.example.Leave.Management.mappers.LeaveMapper;
-import com.example.Leave.Management.repositories.LeaveDayTypeRepository;
-import com.example.Leave.Management.repositories.LeaveTypeRepository;
-import com.example.Leave.Management.repositories.LeavesRepository;
-import com.example.Leave.Management.repositories.UserRepository;
+import com.example.Leave.Management.repositories.*;
 import com.example.Leave.Management.services.LeaveService;
 import jakarta.validation.Valid;
 import lombok.AllArgsConstructor;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.util.UriComponentsBuilder;
+
+import java.util.ArrayList;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Set;
 
 @RestController
 @AllArgsConstructor
@@ -23,7 +30,7 @@ public class LeaveController {
     private final LeaveTypeRepository leaveTypeRepository;
     private final LeaveDayTypeRepository leaveDayTypeRepository;
     private final LeaveMapper leaveMapper;
-
+    private final SupervisorMemberRepository supervisorMemberRepository;
     private final LeaveService leaveService;
     private final UserRepository userRepository;
     @PostMapping
@@ -36,6 +43,11 @@ public class LeaveController {
     @GetMapping
     public Iterable<LeaveDto> getMyLeaves(){
         return leaveService.getMyLeaves();
+    }
+
+    @GetMapping("/subordinate")
+    public Iterable<LeaveDto> getSubordinatesLeaves(){
+        return leaveService.getSubordinatesLeaves();
     }
 
     @GetMapping("/{id}")

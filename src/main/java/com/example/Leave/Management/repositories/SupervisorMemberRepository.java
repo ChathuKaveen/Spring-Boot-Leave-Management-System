@@ -17,4 +17,11 @@ public interface SupervisorMemberRepository extends JpaRepository<SupervisorMemb
             SELECT s FROM SupervisorMember s WHERE s.id <> :id AND (s.user = :user AND s.type =:supervisor)
             """)
     List<SupervisorMember> findByUserAndTypeForUpdate(@Param("user") User user  ,@Param("supervisor") SupervisorType type ,@Param("id") Long id);
+
+    @Query("""
+                SELECT s
+                FROM SupervisorMember s
+                WHERE s.supervisor = :supervisor
+            """)
+    List<SupervisorMember> findDirectSubordinates(@Param("supervisor") User supervisor);
 }

@@ -3,16 +3,10 @@ package com.example.Leave.Management.services;
 import com.example.Leave.Management.dtos.LeavesDtos.LeaveDto;
 import com.example.Leave.Management.dtos.LeavesDtos.RegisterLeaveRequest;
 import com.example.Leave.Management.dtos.LeavesDtos.UpdateLeaveRequest;
-import com.example.Leave.Management.entities.DayType;
-import com.example.Leave.Management.entities.LeaveDayType;
-import com.example.Leave.Management.entities.Leaves;
-import com.example.Leave.Management.entities.Status;
+import com.example.Leave.Management.entities.*;
 import com.example.Leave.Management.exceptions.*;
 import com.example.Leave.Management.mappers.LeaveMapper;
-import com.example.Leave.Management.repositories.LeaveDayTypeRepository;
-import com.example.Leave.Management.repositories.LeaveTypeRepository;
-import com.example.Leave.Management.repositories.LeavesRepository;
-import com.example.Leave.Management.repositories.UserRepository;
+import com.example.Leave.Management.repositories.*;
 import lombok.AllArgsConstructor;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -22,6 +16,10 @@ import org.springframework.stereotype.Service;
 import org.springframework.web.server.ResponseStatusException;
 import java.time.LocalDate;
 import java.time.temporal.ChronoUnit;
+import java.util.ArrayList;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Set;
 
 @AllArgsConstructor
 @Service
@@ -32,7 +30,7 @@ public class LeaveService {
     private final LeaveDayTypeRepository leaveDayTypeRepository;
     private final LeavesRepository leavesRepository;
     private final LeaveMapper leaveMapper;
-
+    private final SupervisorMemberRepository supervisorMemberRepository;
     public double calLeaveDays(LocalDate from , LocalDate to , LeaveDayType leaveFromDayTypeFinder ){
         var fromDayType = leaveFromDayTypeFinder.getType();
         if(from.isAfter(to)){
@@ -89,7 +87,7 @@ public class LeaveService {
         var today = LocalDate.now();
         var fromDate = request.getFrom_date();
         var toDate = request.getTo_date()!= null ? request.getTo_date() : fromDate;
-        if(!fromDate.isBefore(today) || !toDate.isBefore(today)){
+        if(fromDate.isBefore(today) || toDate.isBefore(today)){
             throw new LeaveDayCantBeforeTodayException("To-Date or From-Date must not be older date");
         }
         var overlappingLeaves = leavesRepository.findOverlappingLeaves(userId , fromDate , toDate);
@@ -255,5 +253,33 @@ public class LeaveService {
         }
         leave.setStatus(Status.CANCELLED);
         leavesRepository.save(leave);
+    }
+
+    public Iterable<LeaveDto> getSubordinatesLeaves(){
+        var authentication = SecurityContextHolder.getContext().getAuthentication();
+        var userId =(Long) authentication.getPrincipal();
+
+        var supervisor = userRepository.findById(userId).orElseThrow(UserNotFoundException::new);
+        var subordinates = getAllSubordinates(supervisor);
+        var allLeaves = leavesRepository.findLeavesByUsers(subordinates);
+        return allLeaves.stream().map(leaveMapper::toDto).toList();
+    }
+    private List<User> getAllSubordinates(User supervisor){
+        Set<Long> visited = new HashSet<>();
+        List<User> result = new ArrayList<>();
+        collectSubordinates(supervisor , result , visited);
+        return result;
+    }
+    private void collectSubordinates(User supervisor , List<User> result , Set<Long> visited){
+        if (!visited.add(supervisor.getId())) {
+            return;
+        }
+        List<SupervisorMember> directSubs = supervisorMemberRepository.findDirectSubordinates(supervisor);
+
+        for(SupervisorMember sm:directSubs){
+            User subordinate = sm.getUser();
+            result.add(subordinate);
+            collectSubordinates(subordinate , result , visited);
+        }
     }
 }
