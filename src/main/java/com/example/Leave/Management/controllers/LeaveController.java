@@ -1,26 +1,14 @@
 package com.example.Leave.Management.controllers;
 
-import com.example.Leave.Management.dtos.LeavesDtos.LeaveDto;
-import com.example.Leave.Management.dtos.LeavesDtos.RegisterLeaveRequest;
-import com.example.Leave.Management.dtos.LeavesDtos.UpdateLeaveRequest;
-import com.example.Leave.Management.entities.SupervisorMember;
-import com.example.Leave.Management.entities.User;
-import com.example.Leave.Management.exceptions.UserNotFoundException;
-import com.example.Leave.Management.exceptions.YouAreNotSupervisorException;
+import com.example.Leave.Management.dtos.LeavesDtos.*;
 import com.example.Leave.Management.mappers.LeaveMapper;
 import com.example.Leave.Management.repositories.*;
 import com.example.Leave.Management.services.LeaveService;
 import jakarta.validation.Valid;
 import lombok.AllArgsConstructor;
 import org.springframework.http.ResponseEntity;
-import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.util.UriComponentsBuilder;
-
-import java.util.ArrayList;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Set;
 
 @RestController
 @AllArgsConstructor
@@ -50,6 +38,28 @@ public class LeaveController {
         return leaveService.getSubordinatesLeaves();
     }
 
+    @GetMapping("/all-leaves")
+    public ResponseEntity<?> getAllLeaves(
+            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "10") int size,
+            @RequestParam(defaultValue = "createdDate,desc") String sort,
+            @RequestParam(required = false) String status,
+            @RequestParam(required = false) String fromDate,
+            @RequestParam(required = false) String toDate
+    ){
+        var leavesPage =leaveService.getAllLeaves(page , size , sort , status , fromDate , toDate);
+        var data = leavesPage.stream().map(leaveMapper::toDto).toList();
+        var response = new LeavePageResponse<>(
+                data,
+                leavesPage.getNumber(),
+                leavesPage.getSize(),
+                leavesPage.getTotalPages(),
+                leavesPage.getTotalElements()
+        );
+        return ResponseEntity.ok(response);
+        //return leaveService.getAllLeaves(page , size , sort , status , fromDate , toDate);
+    }
+
     @GetMapping("/{id}")
     public ResponseEntity<LeaveDto> getLeaveById(@PathVariable(name = "id") Long id){
         return ResponseEntity.ok(leaveService.getLeaveById(id));
@@ -72,5 +82,9 @@ public class LeaveController {
         return ResponseEntity.noContent().build();
     }
 
-
+    @PatchMapping("/approve/{id}")
+    public ResponseEntity<?> approveRejectLeave(@RequestBody LeaveApproveRequest request , @PathVariable(name = "id") Long id){
+        leaveService.approveRejectLeaves(request , id);
+        return ResponseEntity.ok().build();
+    }
 }

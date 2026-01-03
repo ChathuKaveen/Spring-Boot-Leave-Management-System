@@ -12,4 +12,5 @@ public interface LeaveMapper {
     @Mapping(target = "from_date_type" , source = "from_date_type.id")
     @Mapping(target = "to_date_type" , source = "to_date_type.id")
     LeaveDto toDto(Leaves leaves);
+
 }

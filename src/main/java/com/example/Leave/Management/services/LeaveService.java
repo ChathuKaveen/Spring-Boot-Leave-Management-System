@@ -1,5 +1,6 @@
 package com.example.Leave.Management.services;
 
+import com.example.Leave.Management.dtos.LeavesDtos.LeaveApproveRequest;
 import com.example.Leave.Management.dtos.LeavesDtos.LeaveDto;
 import com.example.Leave.Management.dtos.LeavesDtos.RegisterLeaveRequest;
 import com.example.Leave.Management.dtos.LeavesDtos.UpdateLeaveRequest;
@@ -10,9 +11,13 @@ import com.example.Leave.Management.repositories.*;
 import lombok.AllArgsConstructor;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Sort;
 import org.springframework.http.HttpStatus;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
+import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.server.ResponseStatusException;
 import java.time.LocalDate;
 import java.time.temporal.ChronoUnit;
@@ -117,6 +122,19 @@ public class LeaveService {
             throw new LeaveNotFoundException();
         }
         return leaveMapper.toDto(type);
+    }
+    public Page<Leaves> getAllLeaves(
+            int page,
+            int size,
+            String sort,
+            String status,
+            String fromDate,
+            String toDate
+    ){
+        PageRequest pageRequest = PageRequest.of(page , size);
+        Page<Leaves> leaveList = leavesRepository.findAll(pageRequest);
+        return leaveList;
+        //return leaveList.stream().map(leaveMapper::toDto).toList();
     }
 
     public Iterable<LeaveDto> getMyLeaves(){
@@ -264,12 +282,14 @@ public class LeaveService {
         var allLeaves = leavesRepository.findLeavesByUsers(subordinates);
         return allLeaves.stream().map(leaveMapper::toDto).toList();
     }
+
     private List<User> getAllSubordinates(User supervisor){
         Set<Long> visited = new HashSet<>();
         List<User> result = new ArrayList<>();
         collectSubordinates(supervisor , result , visited);
         return result;
     }
+
     private void collectSubordinates(User supervisor , List<User> result , Set<Long> visited){
         if (!visited.add(supervisor.getId())) {
             return;
@@ -281,5 +301,21 @@ public class LeaveService {
             result.add(subordinate);
             collectSubordinates(subordinate , result , visited);
         }
+    }
+
+    public void approveRejectLeaves(LeaveApproveRequest request , Long id){
+        var leave = leavesRepository.findById(id)
+                .orElseThrow(LeaveNotFoundException::new);
+
+        var authentication = SecurityContextHolder.getContext().getAuthentication();
+        var userId =(Long) authentication.getPrincipal();
+        var user = userRepository.findById(userId).orElseThrow(UserNotFoundException::new);
+        var leavedUser = leave.getUser();
+        var isSupervisor = supervisorMemberRepository.existsBySupervisorAndUser(user , leavedUser);
+        if(!isSupervisor){
+            throw new YouAreNotSupervisorException("You are not the supervisor of this member");
+        }
+        leave.setStatus(request.getStatus());
+        leavesRepository.save(leave);
     }
 }

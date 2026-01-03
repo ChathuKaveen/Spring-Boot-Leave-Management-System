@@ -59,6 +59,7 @@ public class SecurityConfig {
                         .requestMatchers(HttpMethod.DELETE ,  "/users/**").hasRole(Role.ADMIN.name())
 
                         //Leave ---> only for authenticated users , delete only for admin
+                        .requestMatchers("/leave/all-leaves").hasRole(Role.ADMIN.name())
                         .requestMatchers(HttpMethod.POST, "/leave/**").authenticated()
                         .requestMatchers(HttpMethod.PUT, "/leave/**").authenticated()
                         .requestMatchers(HttpMethod.PATCH, "/leave/**").authenticated()

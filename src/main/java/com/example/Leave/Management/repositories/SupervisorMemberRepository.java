@@ -24,4 +24,7 @@ public interface SupervisorMemberRepository extends JpaRepository<SupervisorMemb
                 WHERE s.supervisor = :supervisor
             """)
     List<SupervisorMember> findDirectSubordinates(@Param("supervisor") User supervisor);
+
+    boolean existsBySupervisorAndUser(User supervisor , User user);
+
 }
