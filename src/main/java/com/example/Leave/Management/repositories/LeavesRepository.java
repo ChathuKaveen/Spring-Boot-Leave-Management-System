@@ -1,7 +1,10 @@
 package com.example.Leave.Management.repositories;
 
 import com.example.Leave.Management.entities.Leaves;
+import com.example.Leave.Management.entities.Status;
 import com.example.Leave.Management.entities.User;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
@@ -47,4 +50,17 @@ public interface LeavesRepository extends JpaRepository<Leaves , Long> {
                 WHERE s.user IN  :users
             """)
     List<Leaves> findLeavesByUsers(@Param("users") List<User> users);
+
+    @Query("""
+        SELECT l FROM Leaves l
+        WHERE (:status IS NULL OR l.status = :status)
+        AND (:fromDate IS NULL OR l.from_date >= :fromDate)
+        AND (:toDate IS NULL OR l.to_date <= :toDate)
+        """)
+    Page<Leaves> findWithFilters(
+            @Param("status") Status status,
+            @Param("fromDate") LocalDate fromDate,
+            @Param("toDate") LocalDate toDate,
+            Pageable pageable
+    );
 }

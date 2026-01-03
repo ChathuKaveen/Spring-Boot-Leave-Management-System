@@ -127,12 +127,13 @@ public class LeaveService {
             int page,
             int size,
             String sort,
-            String status,
-            String fromDate,
-            String toDate
+            Status status,
+            LocalDate fromDate,
+            LocalDate toDate
     ){
         PageRequest pageRequest = PageRequest.of(page , size);
-        Page<Leaves> leaveList = leavesRepository.findAll(pageRequest);
+        //Page<Leaves> leaveList = leavesRepository.findAll(pageRequest);
+        Page<Leaves> leaveList = leavesRepository.findWithFilters(status , fromDate , toDate , pageRequest);
         return leaveList;
         //return leaveList.stream().map(leaveMapper::toDto).toList();
     }

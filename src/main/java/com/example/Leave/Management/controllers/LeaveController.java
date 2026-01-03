@@ -1,6 +1,7 @@
 package com.example.Leave.Management.controllers;
 
 import com.example.Leave.Management.dtos.LeavesDtos.*;
+import com.example.Leave.Management.entities.Status;
 import com.example.Leave.Management.mappers.LeaveMapper;
 import com.example.Leave.Management.repositories.*;
 import com.example.Leave.Management.services.LeaveService;
@@ -9,6 +10,8 @@ import lombok.AllArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.util.UriComponentsBuilder;
+
+import java.time.LocalDate;
 
 @RestController
 @AllArgsConstructor
@@ -43,9 +46,9 @@ public class LeaveController {
             @RequestParam(defaultValue = "0") int page,
             @RequestParam(defaultValue = "10") int size,
             @RequestParam(defaultValue = "createdDate,desc") String sort,
-            @RequestParam(required = false) String status,
-            @RequestParam(required = false) String fromDate,
-            @RequestParam(required = false) String toDate
+            @RequestParam(required = false) Status status,
+            @RequestParam(required = false) LocalDate fromDate,
+            @RequestParam(required = false) LocalDate toDate
     ){
         var leavesPage =leaveService.getAllLeaves(page , size , sort , status , fromDate , toDate);
         var data = leavesPage.stream().map(leaveMapper::toDto).toList();
