@@ -50,7 +50,7 @@ public class Leaves {
     private String reason;
 
     @Column(name = "updated_by")
-    private int updated_by;
+    private Long updated_by;
 
     @Column(name = "updated_on" , updatable = false , insertable = false)
     private LocalDateTime updated_on;

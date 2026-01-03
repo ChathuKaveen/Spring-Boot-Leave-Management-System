@@ -57,7 +57,6 @@ public class LeaveController {
                 leavesPage.getTotalElements()
         );
         return ResponseEntity.ok(response);
-        //return leaveService.getAllLeaves(page , size , sort , status , fromDate , toDate);
     }
 
     @GetMapping("/{id}")

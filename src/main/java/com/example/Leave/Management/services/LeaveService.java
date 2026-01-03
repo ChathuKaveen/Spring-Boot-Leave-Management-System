@@ -274,12 +274,20 @@ public class LeaveService {
     }
 
     public Iterable<LeaveDto> getSubordinatesLeaves(){
+        List<Leaves> allLeaves;
         var authentication = SecurityContextHolder.getContext().getAuthentication();
         var userId =(Long) authentication.getPrincipal();
 
-        var supervisor = userRepository.findById(userId).orElseThrow(UserNotFoundException::new);
-        var subordinates = getAllSubordinates(supervisor);
-        var allLeaves = leavesRepository.findLeavesByUsers(subordinates);
+        var user = userRepository.findById(userId).orElseThrow(UserNotFoundException::new);
+        var isAdmin = user.getRole();
+        if(isAdmin != Role.ADMIN){
+            var supervisor = userRepository.findById(userId).orElseThrow(UserNotFoundException::new);
+            var subordinates = getAllSubordinates(supervisor);
+            allLeaves = leavesRepository.findLeavesByUsers(subordinates);
+        }else{
+            allLeaves = leavesRepository.findAll();
+        }
+
         return allLeaves.stream().map(leaveMapper::toDto).toList();
     }
 
@@ -311,11 +319,18 @@ public class LeaveService {
         var userId =(Long) authentication.getPrincipal();
         var user = userRepository.findById(userId).orElseThrow(UserNotFoundException::new);
         var leavedUser = leave.getUser();
-        var isSupervisor = supervisorMemberRepository.existsBySupervisorAndUser(user , leavedUser);
-        if(!isSupervisor){
-            throw new YouAreNotSupervisorException("You are not the supervisor of this member");
+        var isAdmin = user.getRole();
+        if(isAdmin != Role.ADMIN){
+            var isSupervisor = supervisorMemberRepository.existsBySupervisorAndUser(user , leavedUser);
+            if(!isSupervisor){
+                throw new YouAreNotSupervisorException("You are not the supervisor of this member");
+            }
+        }
+        if(leave.getStatus() == Status.CANCELLED){
+            throw new YouAreNotSupervisorException("Member Already Cancelled the leave");
         }
         leave.setStatus(request.getStatus());
+        leave.setUpdated_by(userId);
         leavesRepository.save(leave);
     }
 }
