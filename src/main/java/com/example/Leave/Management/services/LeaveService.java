@@ -39,7 +39,7 @@ public class LeaveService {
     public double calLeaveDays(LocalDate from , LocalDate to , LeaveDayType leaveFromDayTypeFinder ){
         var fromDayType = leaveFromDayTypeFinder.getType();
         if(from.isAfter(to)){
-            throw new FromDateToDateException();
+            throw new FromDateToDateException("To Date cant be before From Date");
         }
         long totalDays = ChronoUnit.DAYS.between(from, to) + 1;
 
@@ -101,7 +101,7 @@ public class LeaveService {
         }
 
         if(fromDate.isAfter(toDate)){
-            throw new FromDateToDateException();
+            throw new FromDateToDateException("To Date cant be before From Date");
         }
         if((leaveFromDayTypeFinder.getType() == DayType.HALF_DAY_MORNING || leaveFromDayTypeFinder.getType() == DayType.HALF_DAY_EVENING) && !fromDate.isEqual(toDate)){
             throw new HalfDayMustBeSeperateDayException();
@@ -169,7 +169,7 @@ public class LeaveService {
                 throw new LeavesOverlappingException();
             }
             if (exsistingTo_date.isBefore(finalFrom_date)) {
-                throw new FromDateToDateException();
+                throw new FromDateToDateException("To Date cant be before From Date");
             }
             if(request.getFrom_date_type() != null){
                 leave.setDays(calLeaveDays(
@@ -195,7 +195,7 @@ public class LeaveService {
                 throw new LeavesOverlappingException();
             }
             if (finalTo_date.isBefore(exsistingFrom_date)) {
-                throw new FromDateToDateException();
+                throw new FromDateToDateException("To Date cant be before From Date");
             }
 
             leave.setTo_date(finalTo_date);
@@ -208,7 +208,7 @@ public class LeaveService {
                 throw new LeavesOverlappingException();
             }
             if (finalTo_date.isBefore(finalFrom_date)) {
-                throw new FromDateToDateException();
+                throw new FromDateToDateException("To Date cant be before From Date");
             }
             if(request.getFrom_date_type() != null){
                 leave.setDays(calLeaveDays(

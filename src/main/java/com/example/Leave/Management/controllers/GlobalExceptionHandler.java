@@ -23,8 +23,8 @@ public class GlobalExceptionHandler {
     }
 
     @ExceptionHandler(FromDateToDateException.class)
-    public ResponseEntity<Map<String , String>> handleUserNotFound(){
-        return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(Map.of("error" , "To Date cant be before From Date"));
+    public ResponseEntity<Map<String , String>> handleUserNotFound(FromDateToDateException e){
+        return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(Map.of("error" , e.getMessage()));
     }
 
     @ExceptionHandler(LeaveTypeNotFoundException.class)
