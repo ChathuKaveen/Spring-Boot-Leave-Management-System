@@ -1,2 +1,2 @@
-ALTER TABLE `leavesystem`.`leaves`
+ALTER TABLE `leaves`
 CHANGE COLUMN `days` `days` DOUBLE NULL DEFAULT NULL ;

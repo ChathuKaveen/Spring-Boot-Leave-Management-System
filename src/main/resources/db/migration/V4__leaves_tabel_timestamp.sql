@@ -1,8 +1,8 @@
-ALTER TABLE `leavesystem`.`leaves`
+ALTER TABLE `leaves`
 CHANGE COLUMN `updated_on` `updated_on` TIMESTAMP NOT NULL ;
 
-ALTER TABLE `leavesystem`.`leaves`
+ALTER TABLE `leaves`
 CHANGE COLUMN `updated_on` `updated_on` TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP;
 
-ALTER TABLE `leavesystem`.`user`
+ALTER TABLE `user`
 CHANGE COLUMN `password` `password` VARCHAR(100) NOT NULL ;

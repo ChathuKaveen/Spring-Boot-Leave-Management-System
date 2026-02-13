@@ -1,4 +1,4 @@
-CREATE TABLE `leavesystem`.`user_supervisor` (
+CREATE TABLE `user_supervisor` (
   `id` BIGINT NOT NULL AUTO_INCREMENT,
   `user_id` BIGINT NOT NULL,
   `supervisor_id` BIGINT NULL,
@@ -7,6 +7,6 @@ CREATE TABLE `leavesystem`.`user_supervisor` (
   INDEX `user foreignkey_idx` (`user_id` ASC) VISIBLE,
   CONSTRAINT `user foreignkey`
     FOREIGN KEY (`user_id`)
-    REFERENCES `leavesystem`.`user` (`id`)
+    REFERENCES `user` (`id`)
     ON DELETE NO ACTION
     ON UPDATE NO ACTION);

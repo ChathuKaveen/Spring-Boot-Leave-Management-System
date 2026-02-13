@@ -1,2 +1,2 @@
-ALTER TABLE `leavesystem`.`user`
+ALTER TABLE `user`
 ADD COLUMN `role` VARCHAR(45) NULL DEFAULT 'USER' AFTER `password`;
