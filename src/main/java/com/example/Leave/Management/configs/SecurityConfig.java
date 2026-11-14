@@ -9,6 +9,7 @@ import org.springframework.http.HttpMethod;
 import org.springframework.http.HttpStatus;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.AuthenticationProvider;
+import org.springframework.security.config.Customizer;
 import org.springframework.security.config.annotation.authentication.configuration.AuthenticationConfiguration;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
@@ -48,12 +49,16 @@ public class SecurityConfig {
     @Bean
     public SecurityFilterChain securityFilterChain (HttpSecurity http)throws Exception{
         http
+                .cors(Customizer.withDefaults())
                 .sessionManagement(c->c.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
                 .csrf(AbstractHttpConfigurer::disable)
                 .authorizeHttpRequests(c->c
-                       .requestMatchers("/auth/login").permitAll()
+                        .requestMatchers(HttpMethod.GET,"/auth/isAdmin").authenticated()
+                        .requestMatchers("/auth/login").permitAll()
                         .requestMatchers(HttpMethod.POST,"/auth/refresh").permitAll()
-
+                        .requestMatchers(HttpMethod.POST , "/auth/validate").permitAll()
+                        .requestMatchers(HttpMethod.GET , "/leave-type/**").permitAll()
+                        .requestMatchers(HttpMethod.GET , "/leave-day-type/**").permitAll()
                         //Users ---> Admin Only
                         .requestMatchers(HttpMethod.GET ,  "/users/**").hasRole(Role.ADMIN.name())
                         .requestMatchers(HttpMethod.DELETE ,  "/users/**").hasRole(Role.ADMIN.name())
@@ -66,8 +71,10 @@ public class SecurityConfig {
                         .requestMatchers(HttpMethod.GET, "/leave/**").authenticated()
                         .requestMatchers(HttpMethod.DELETE, "/leave/**").hasRole(Role.ADMIN.name())
 
+                        .requestMatchers(HttpMethod.GET,"/supervisor-relationship/**").authenticated()
+
                         // Admin-only resources
-                        .requestMatchers("/supervisor-relationship/**").hasRole(Role.ADMIN.name())
+                        .requestMatchers(HttpMethod.POST,"/supervisor-relationship/**").hasRole(Role.ADMIN.name())
                         .requestMatchers("/leave-type/**").hasRole(Role.ADMIN.name())
                         .requestMatchers("/leave-day-type/**").hasRole(Role.ADMIN.name())
                         .anyRequest().authenticated()

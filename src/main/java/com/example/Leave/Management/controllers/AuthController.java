@@ -4,6 +4,8 @@ import com.example.Leave.Management.configs.JwtConfig;
 import com.example.Leave.Management.dtos.JwtResponse;
 import com.example.Leave.Management.dtos.UserDtos.LoginRequest;
 import com.example.Leave.Management.dtos.UserDtos.UserDto;
+import com.example.Leave.Management.entities.Role;
+import com.example.Leave.Management.exceptions.UserNotFoundException;
 import com.example.Leave.Management.mappers.UserMapper;
 import com.example.Leave.Management.repositories.UserRepository;
 import com.example.Leave.Management.services.JwtService;
@@ -21,6 +23,7 @@ import org.springframework.web.bind.annotation.*;
 
 @RestController
 @RequestMapping("/auth")
+@CrossOrigin(origins = "http://localhost:4200")
 @AllArgsConstructor
 public class AuthController {
 
@@ -79,6 +82,14 @@ public class AuthController {
             return ResponseEntity.notFound().build();
         }
         return ResponseEntity.ok().body(userMapper.toDto(user));
+    }
+
+    @GetMapping("/isAdmin")
+    public ResponseEntity<Boolean> isAdmin(){
+        var authentication = SecurityContextHolder.getContext().getAuthentication();
+        var userId = (Long) authentication.getPrincipal();
+        boolean isUserAdmin = userRepository.existsByIdAndRole(userId, Role.ADMIN);
+        return ResponseEntity.ok(isUserAdmin);
     }
 
     @ExceptionHandler(BadCredentialsException.class)

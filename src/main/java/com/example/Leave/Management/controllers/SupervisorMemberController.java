@@ -11,6 +11,7 @@ import jakarta.validation.Valid;
 import lombok.AllArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.util.UriComponentsBuilder;
 
@@ -96,6 +97,21 @@ public class SupervisorMemberController {
         }
         supervisorMemberRepository.save(relationship);
         return ResponseEntity.ok().build();
+    }
+
+    @GetMapping
+    public ResponseEntity<?> isSupervisor(){
+
+        var authentication = SecurityContextHolder.getContext().getAuthentication();
+        var userId =(Long) authentication.getPrincipal();
+        var user = userRepository.findById(userId).orElse(null);
+        System.out.println(user);
+        if(user != null){
+            var isUserSupervisor = supervisorMemberRepository.existsAsSupervisor(user);
+            return ResponseEntity.ok(isUserSupervisor);
+        }
+        throw new UserNotFoundException();
+
     }
 
 

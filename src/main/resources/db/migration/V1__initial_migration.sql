@@ -3,7 +3,7 @@ CREATE TABLE `user` (
   `name` varchar(100) NOT NULL,
   `email` varchar(100) DEFAULT NULL,
   PRIMARY KEY (`id`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
 CREATE TABLE `leaves` (
   `id` bigint NOT NULL AUTO_INCREMENT,
@@ -21,6 +21,6 @@ CREATE TABLE `leaves` (
   PRIMARY KEY (`id`),
   KEY `uid_foreign_idx` (`uid`),
   CONSTRAINT `uid_foreign` FOREIGN KEY (`uid`) REFERENCES `user` (`id`) ON DELETE CASCADE
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
 

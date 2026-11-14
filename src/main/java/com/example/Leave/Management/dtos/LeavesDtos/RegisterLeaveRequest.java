@@ -15,6 +15,7 @@ public class RegisterLeaveRequest {
     private LocalDate to_date;
     @NotNull(message = "From date type is required")
     private Integer from_date_type;
+    private Integer to_date_type;
     @Size(max = 200, message = "Reason must be at most 200 characters")
     private String reason;
 }

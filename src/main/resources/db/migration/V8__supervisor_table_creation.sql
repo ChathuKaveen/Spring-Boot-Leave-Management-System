@@ -4,7 +4,7 @@ CREATE TABLE `user_supervisor` (
   `supervisor_id` BIGINT NULL,
   `type` VARCHAR(100) NULL,
   PRIMARY KEY (`id`),
-  INDEX `user foreignkey_idx` (`user_id` ASC) VISIBLE,
+  INDEX `user foreignkey_idx` (`user_id`),
   CONSTRAINT `user foreignkey`
     FOREIGN KEY (`user_id`)
     REFERENCES `user` (`id`)

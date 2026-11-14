@@ -27,4 +27,7 @@ public interface SupervisorMemberRepository extends JpaRepository<SupervisorMemb
 
     boolean existsBySupervisorAndUser(User supervisor , User user);
 
+    @Query("SELECT CASE WHEN COUNT(s) > 0 THEN true ELSE false END FROM SupervisorMember s WHERE s.supervisor = :userId")
+    boolean existsAsSupervisor(@Param("userId") User user);
+
 }

@@ -3,6 +3,7 @@ spring:
     name: Leave-Management
   flyway:
     enabled: true
+    validate-on-migrate: false
     baseline-on-migrate: true
 
   config:

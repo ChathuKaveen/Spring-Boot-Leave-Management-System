@@ -36,6 +36,8 @@ public class LeaveService {
     private final LeavesRepository leavesRepository;
     private final LeaveMapper leaveMapper;
     private final SupervisorMemberRepository supervisorMemberRepository;
+
+
     public double calLeaveDays(LocalDate from , LocalDate to , LeaveDayType leaveFromDayTypeFinder ){
         var fromDayType = leaveFromDayTypeFinder.getType();
         if(from.isAfter(to)){

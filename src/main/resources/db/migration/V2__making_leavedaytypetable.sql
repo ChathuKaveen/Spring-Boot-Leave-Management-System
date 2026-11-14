@@ -13,8 +13,8 @@ CREATE TABLE `leave_date_type` (
 
 
     ALTER TABLE `leaves`
-    ADD INDEX `from_date_foreign_idx` (`from_date_type` ASC) VISIBLE,
-    ADD INDEX `to_date_foreign_idx` (`to_date_type` ASC) VISIBLE;
+    ADD INDEX `from_date_foreign_idx` (`from_date_type`) ,
+    ADD INDEX `to_date_foreign_idx` (`to_date_type`) ;
 
     ALTER TABLE `leaves`
     ADD CONSTRAINT `from_date_foreign`
@@ -29,7 +29,7 @@ CREATE TABLE `leave_date_type` (
       ON UPDATE NO ACTION;
 
 ALTER TABLE `leaves`
-ADD INDEX `leave_type_id_idx` (`leave_type_id` ASC) VISIBLE;
+ADD INDEX `leave_type_id_idx` (`leave_type_id`) ;
 
 ALTER TABLE `leaves`
 ADD CONSTRAINT `leave_type_id`

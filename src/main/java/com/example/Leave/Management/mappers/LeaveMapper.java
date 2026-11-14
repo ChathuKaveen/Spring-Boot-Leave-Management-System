@@ -7,10 +7,13 @@ import org.mapstruct.Mapping;
 
 @Mapper(componentModel = "spring")
 public interface LeaveMapper {
-    @Mapping(target = "userId" , source = "user.id")
-    @Mapping(target = "leaveType" , source = "leaveTypes.id")
-    @Mapping(target = "from_date_type" , source = "from_date_type.id")
-    @Mapping(target = "to_date_type" , source = "to_date_type.id")
+    @Mapping(target = "userName" , source = "user.name")
+    @Mapping(target = "leaveType" , source = "leaveTypes.type")
+    @Mapping(target = "leaveTypeId" , source = "leaveTypes.id")
+    @Mapping(target = "from_date_type" , source = "from_date_type.type")
+    @Mapping(target = "from_date_type_id" , source = "from_date_type.id")
+    @Mapping(target = "to_date_type" , source = "to_date_type.type")
+    @Mapping(target = "to_date_type_id" , source = "to_date_type.id")
     LeaveDto toDto(Leaves leaves);
 
 }
